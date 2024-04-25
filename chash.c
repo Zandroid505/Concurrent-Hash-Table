@@ -6,7 +6,7 @@
 
 #include "file_io.h"
 #include "hashdb.h"
-// #include "rwlocks.h"
+#include "rwlocks.h"
 
 void create_threads(pthread_t *threads, op_args *operations, hashRecord *hash_record_head, FILE *commands_file)
 {
@@ -105,8 +105,8 @@ void chash(void)
 
     hashRecord *hash_record_head = NULL;
 
-    // rwlock_init();
-    // num_locks_init();
+    rwlock_init();
+    num_locks_init();
 
     // Open output file.
     open_output_file("output.txt");

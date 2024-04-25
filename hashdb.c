@@ -5,7 +5,7 @@
 #include <pthread.h>
 #include "hashdb.h"
 #include "file_io.h"
-// #include "rwlocks.h"
+#include "rwlocks.h"
 
 // Jenkins Hash function declaration.
 uint32_t jenkins_hash(char name[50])
