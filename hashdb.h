@@ -15,8 +15,7 @@ typedef struct hash_struct
 // Hold arguments to pass to hash record operation functions.
 typedef struct hash_record_op_arg
 {
-	hashRecord *hash_record_head;
-	char op_type;
+	hashRecord **hash_record_head;
 	char op[15];
 	char name[50];
 	uint32_t salary;

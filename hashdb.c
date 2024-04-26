@@ -34,30 +34,30 @@ void *insert(void *arg)
 	uint32_t hash = jenkins_hash(args->name);
 
 	// Write the operation to the file.
-	write_insert_op(args->op, hash, args->name, args->salary);
+	// write_insert_op(args->op, hash, args->name, args->salary);
 
-	// write_write_lock_acquired();
-
-	// rwlock_acquire_writelock();
-
-	// Create new record & check for memory alloc errors
+	// Create new record & check for memory alloc errors.
 	hashRecord *new_record = malloc(sizeof(hashRecord));
 	if (new_record == NULL)
 	{
-		printf("Error: Could not allocate memory for new record.\n");
+		fprintf(stderr, "Error: Could not allocate memory for new record.\n");
 		return NULL;
 	}
 
-	// Initialize new record
+	// write_write_lock_acquired();
+
+	rwlock_acquire_writelock();
+
+	// Initialize new record.
 	new_record->hash = hash;
 	strncpy(new_record->name, args->name, 50);
 	new_record->salary = args->salary;
 	new_record->next = NULL;
 
 	// Find correct position and insert
-	hashRecord **head = &(args->hash_record_head);
+	hashRecord **head = (args->hash_record_head);
 
-	// If hashRecord is empty, make it head.
+	// If hashRecord is empty or new_record has hash greater than current head, make it head.
 	if (*head == NULL || (*head)->hash >= new_record->hash)
 	{
 		new_record->next = *head;
@@ -76,11 +76,11 @@ void *insert(void *arg)
 		current->next = new_record;
 	}
 
-	// rwlock_release_writelock();
+	rwlock_release_writelock();
 
 	// write_write_lock_released();
 
-	// pthread_exit(NULL)
+	pthread_exit(NULL);
 }
 
 // Deletion function declaration.
