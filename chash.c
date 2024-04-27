@@ -23,12 +23,11 @@ void create_threads(pthread_t *threads, int num_threads, op_args *operations, FI
             // insert(&operations[i]);
             pthread_create(&threads[i], NULL, insert, &operations[i]);
         }
-        // else if (strcmp(operations[i].op, "delete") == 0)
-        // {
-
-        //     delete(&operations[i]);
-        //     // pthread_create(&threads[i], NULL, delete, args);
-        // }
+        else if (strcmp(operations[i].op, "delete") == 0)
+        {
+            // delete(&operations[i]);
+            pthread_create(&threads[i], NULL, delete, &operations[i]);
+        }
         // else if (strcmp(operations[i].op, "search") == 0)
         // {
 
@@ -63,19 +62,19 @@ void join_threads(pthread_t *threads, op_args *operations, int num_threads) {
         
         int res = pthread_join(threads[i], &result);
 
-//         if (op_type[i] == 's')
-//         {
+        // if (strcmp(operations[i].op, "search") == 0)
+        // {
+        //     if (result == NULL)
+        //     {
+        //         write_no_record_found();
+        //     }
+        //     else
+        //     {
+        //         hashRecord *found_record = (hashRecord *)result;
 
-
-//             if (!result)
-//             {
-//                 write_no_record_found();
-//             }
-//             else
-//             {
-//                 write_record((hashRecord *)result);
-//             }
-//         }
+        //         write_record(found_record->hash, found_record->name, found_record->salary);
+        //     }
+        // }
 //         else if (op_type[i] == 'p')
 //         {
 //             pthread_join(threads[i], &result);
@@ -97,11 +96,11 @@ void chash(void)
 
    // TODO: Add checks for DMA above.
 
-    hashRecord *head = NULL;
+    hashRecord *hash_record_head = NULL;
 
     // Read operations from commands file.
     for (int i = 0; i < num_threads && (read_op(commands_file, &operations[i])) == 0; i++)
-        operations[i].hash_record_head = &head;
+        operations[i].hash_record_head = &hash_record_head;
 
     // Close commands file.
     close_commands_file(commands_file);
@@ -130,14 +129,14 @@ void chash(void)
 
     free(threads);
 
-    hashRecord *current = *(operations[0].hash_record_head);
-    while (current != NULL)
-    {
-        printf("%s\n", current->name);
-        current = current->next;
-    }
+    // hashRecord *current = *(operations[0].hash_record_head);
+    // while (current != NULL)
+    // 
+    //     printf("%s\n", current->name);
+    //     current = current->next;
+    // }
 
-    free_hash_record(*(operations[0].hash_record_head));
+    free_hash_record(hash_record_head);
     free(operations);
 
 }

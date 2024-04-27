@@ -143,7 +143,7 @@ FILE *get_output_file()
  */
 void write_insert_op(char op[15], uint32_t hash, char name[50], uint32_t salary)
 {
-    fprintf(output_file, "%s,%u,%s,%u\n", op, hash, name, salary);
+    fprintf(output_file, "INSERT,%u,%s,%u\n", hash, name, salary);
 }
 
 /*
@@ -155,7 +155,7 @@ void write_insert_op(char op[15], uint32_t hash, char name[50], uint32_t salary)
  */
 void write_delete_op(char op[15], char name[50])
 {
-    fprintf(output_file, "%s %s\n", op, name);
+    fprintf(output_file, "DELETE,%s\n", name);
 }
 
 /*
@@ -167,7 +167,7 @@ void write_delete_op(char op[15], char name[50])
  */
 void write_search_op(char op[15], char name[50])
 {
-    fprintf(output_file, "%s %s\n", op, name);
+    fprintf(output_file, "SEARCH,%s\n", name);
 }
 
 void write_record(uint32_t hash, char name[50], uint32_t salary)

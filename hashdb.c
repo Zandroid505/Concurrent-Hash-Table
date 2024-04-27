@@ -33,9 +33,6 @@ void *insert(void *arg)
 	op_args *args = (op_args *)arg;
 	uint32_t hash = jenkins_hash(args->name);
 
-	// Write the operation to the file.
-	// write_insert_op(args->op, hash, args->name, args->salary);
-
 	// Create new record & check for memory alloc errors.
 	hashRecord *new_record = malloc(sizeof(hashRecord));
 	if (new_record == NULL)
@@ -44,9 +41,11 @@ void *insert(void *arg)
 		return NULL;
 	}
 
-	// write_write_lock_acquired();
-
 	rwlock_acquire_writelock();
+	// Write the operation to the file.
+	write_insert_op(args->op, hash, args->name, args->salary);
+
+	write_write_lock_acquired();
 
 	// Initialize new record.
 	new_record->hash = hash;
@@ -54,8 +53,8 @@ void *insert(void *arg)
 	new_record->salary = args->salary;
 	new_record->next = NULL;
 
-	// Find correct position and insert
-	hashRecord **head = (args->hash_record_head);
+	// Get head.
+	hashRecord **head = args->hash_record_head;
 
 	// If hashRecord is empty or new_record has hash greater than current head, make it head.
 	if (*head == NULL || (*head)->hash >= new_record->hash)
@@ -76,62 +75,67 @@ void *insert(void *arg)
 		current->next = new_record;
 	}
 
+	write_write_lock_released();
 	rwlock_release_writelock();
-
-	// write_write_lock_released();
 
 	pthread_exit(NULL);
 }
 
 // Deletion function declaration.
-void delete(void *arg)
+void *delete(void *arg)
 {
 	op_args *args = (op_args *)arg;
 	uint32_t hash = jenkins_hash(args->name);
 	char name[50];
 
+	rwlock_acquire_writelock();
+
 	// Write delete operation to file.
 	write_delete_op(args->op, args->name);
 
-	// write_write_lock_acquired();
-
-	// rwlock_acquire_writelock();
+	write_write_lock_acquired();
 
 	// Hold the head and init a prev hashrecord holder.
-	hashRecord *temp = args->hash_record_head;
+	hashRecord **head = args->hash_record_head;
 	hashRecord *prev = NULL;
-	
+
 	// If head is the record to be deleted.
-	if (temp != NULL && temp->hash == hash)
+	if (*head != NULL && (*head)->hash == hash)
 	{
-		args->hash_record_head = temp->next;
-		free(temp);
-		return;
+		hashRecord *temp = (*head);
+		*head = (*head)->next;
+		free(*head);
+	}
+	else
+	{
+		hashRecord *current = *head;
+
+		// Search hashRecord for record.
+		while (current != NULL && current->hash != hash)
+		{
+			prev = current;
+			current = current->next;
+		}
+
+		// If found, then delete.
+		if (current != NULL)
+		{
+			strncpy(name, current->name, 50);
+
+			// Unlink record from hashrecord.
+			prev->next = current->next;
+
+			free(current);
+		}
 	}
 
-	// Search hashRecord for record.
-	while (temp != NULL && temp->hash != hash)
-	{
-		prev = temp;
-		temp = temp->next;
-	}
 
-	// If found, then delete
-	if (temp != NULL)
-	{
-		strncpy(name, temp->name, 50);
+	write_write_lock_released();
+	rwlock_release_writelock();
 
-		// Unlink record from hashrecord.
-		prev->next = temp->next;
+	
 
-		free(temp);
-	}
-
-	// rwlock_release_writelock();
-
-	// write_write_lock_released();
-
-	// pthread_exit(NULL);
+	pthread_exit(NULL);
 }
 
 // Search function declaration.
@@ -155,7 +159,7 @@ void *search(void *arg)
 		{
 			return current;
 		}
-		
+
 		current = current->next;
 	}
 
@@ -164,7 +168,6 @@ void *search(void *arg)
 	// write_read_lock_released();
 
 	// pthread_exit(found_record);
-
 
 	return NULL;
 }
@@ -229,5 +232,4 @@ void free_hash_record(hashRecord *hash_record_head)
 		current = next;
 	}
 
-	// free(hash_record_head)
 }

@@ -28,7 +28,7 @@ extern uint32_t jenkins_hash(char *key);
 extern void *insert(void *args);
 
 // Deletion function declaration.
-extern void delete(void *args);
+extern void *delete(void *args);
 
 // Search function declaration.
 extern void *search(void *args);
