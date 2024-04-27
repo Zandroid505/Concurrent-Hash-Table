@@ -182,48 +182,22 @@ void *create_record_list(void *arg)
 {
 	op_args *args = (op_args *)arg;
 
-	// write_read_lock_acquired();
+	rwlock_acquire_readlock();
+	write_read_lock_acquired();
 
-	// rwlock_acquire_readlock();
-
-	// Initialize string to hold list contents
-	char *list_contents = malloc(1);
-	list_contents[0] = '\0';
-
-	hashRecord *current = args->hash_record_head;
+	hashRecord *current = *(args->hash_record_head);
 	while (current != NULL)
 	{
-		// Create string for record
-		char record[100];
+		write_record(current->hash, current->name, current->salary);
 
-		// Uses snprintf to prevent buffer overflow
-		// snprintf(record, sizeof(record), "Hash: %u, Name: %s, Salary: %u\n", current->hash, current->name, current->salary);
-
-		// This version is closer to expected output
-		snprintf(record, sizeof(record), "%u,%s,%u\n", current->hash, current->name, current->salary);
-
-		// Reallocate string to hold new record
-		list_contents = realloc(list_contents, strlen(list_contents) + strlen(record) + 1);
-		if (list_contents == NULL)
-		{
-			printf("Error: Could not allocate memory for list_contents\n");
-			return NULL;
-		}
-
-		// Append to list_contents
-		strcat(list_contents, record);
-
-		// Go to next record
+		// Go to next record.
 		current = current->next;
 	}
 
-	// rwlock_release_readlock();
+	write_read_lock_released();
+	rwlock_release_readlock();
 
-	// write_read_lock_released();
-
-	// pthread_exit(list_contents);
-
-	return list_contents;
+	pthread_exit(NULL);
 }
 
 void free_hash_record(hashRecord *hash_record_head)

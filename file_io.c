@@ -80,13 +80,6 @@ int read_op(FILE *commands_file, op_args *operation)
         return -1;
 
     // TODO: Add checks.
-
-    // if (fscanf(commands_file, "%s,%s %s,%u\n", operation->op, operation->name, &(operation->salary)) != EOF)
-    // 	return 0;
-    // else
-    // {
-    // 	return -1;
-    // }
 }
 
 /*
@@ -236,7 +229,6 @@ void write_final_print(int locks_acquired, int locks_released, char *record_list
     fprintf(output_file, "Number of lock acquisitions: %d\n", locks_acquired);
     fprintf(output_file, "Number of lock releases: %d\n", locks_released);
     fprintf(output_file, "Final Table:\n");
-    fprintf(output_file, "%s", record_list);
 }
 
 /*

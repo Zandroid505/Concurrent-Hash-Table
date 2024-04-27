@@ -30,16 +30,10 @@ void create_threads(pthread_t *threads, int num_threads, op_args *operations, FI
         {
             pthread_create(&threads[i], NULL, search, &operations[i]);
         }
-        // else if (strcmp(operations[i].op, "print") == 0)
-        // {
-        //     void *record_list_tmp = create_record_list(&operations[i]);
-
-        //     char *record_list = (char *)record_list_tmp;
-            
-        //     write_record_list(record_list);
-        //     free(record_list);
-        //     // pthread_create(&threads[i], NULL, create_record_list, args);
-        // }
+        else if (strcmp(operations[i].op, "print") == 0)
+        {
+            pthread_create(&threads[i], NULL, create_record_list, &operations[i]);
+        }
     }
 }
 
@@ -63,18 +57,13 @@ void join_threads(pthread_t *threads, op_args *operations, int num_threads) {
                 write_record(found_record->hash, found_record->name, found_record->salary);
             }
         }
-//         else if (op_type[i] == 'p')
-//         {
-//             pthread_join(threads[i], &result);
-//             write_record_list(result);
-//         }
     }
 }
 
 void chash(void)
 {
     // Open file.
-    FILE *commands_file = open_commands_file("commands1.txt");
+    FILE *commands_file = open_commands_file("commands.txt");
 
     // Read number of threads.
     int num_threads = read_num_threads(commands_file);
