@@ -41,11 +41,13 @@ void *insert(void *arg)
 		return NULL;
 	}
 
+	// Acquire Write lock.
 	rwlock_acquire_writelock();
-	// Write the operation to the file.
-	write_insert_op(args->op, hash, args->name, args->salary);
 
 	write_write_lock_acquired();
+
+	// Write the operation to the file.
+	write_insert_op(args->op, hash, args->name, args->salary);
 
 	// Initialize new record.
 	new_record->hash = hash;
@@ -76,6 +78,8 @@ void *insert(void *arg)
 	}
 
 	write_write_lock_released();
+
+	// Release Write lock.
 	rwlock_release_writelock();
 
 	pthread_exit(NULL);
@@ -88,12 +92,13 @@ void *delete(void *arg)
 	uint32_t hash = jenkins_hash(args->name);
 	char name[50];
 
+	// Acquire Write lock.
 	rwlock_acquire_writelock();
+
+	write_write_lock_acquired();
 
 	// Write delete operation to file.
 	write_delete_op(args->op, args->name);
-
-	write_write_lock_acquired();
 
 	// Hold the head and init a prev hashrecord holder.
 	hashRecord **head = args->hash_record_head;
@@ -129,11 +134,10 @@ void *delete(void *arg)
 		}
 	}
 
-
 	write_write_lock_released();
-	rwlock_release_writelock();
-
 	
+	// Release Write lock.
+	rwlock_release_writelock();
 
 	pthread_exit(NULL);
 }
@@ -143,33 +147,35 @@ void *search(void *arg)
 {
 	op_args *args = (op_args *)arg;
 	uint32_t hash = jenkins_hash(args->name);
+	hashRecord *found_record = NULL;
+
+	// Acquire Read lock.
+	rwlock_acquire_readlock();
+	
+	write_read_lock_acquired();
 
 	// Write the operation to the file.
 	write_search_op(args->op, args->name);
 
-	// write_read_lock_acquired();
-
-	// rwlock_acquire_readlock();
-
 	// Search list for record
-	hashRecord *current = args->hash_record_head;
+	hashRecord *current = *(args->hash_record_head);
 	while (current != NULL)
 	{
 		if (current->hash == hash)
 		{
-			return current;
+			found_record = current;
+			break;
 		}
 
 		current = current->next;
 	}
 
-	// rwlock_release_readlock();
+	write_read_lock_released();
 
-	// write_read_lock_released();
+	// Release Read lock.
+	rwlock_release_readlock();
 
-	// pthread_exit(found_record);
-
-	return NULL;
+	pthread_exit(found_record);
 }
 
 void *create_record_list(void *arg)

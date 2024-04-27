@@ -20,28 +20,16 @@ void create_threads(pthread_t *threads, int num_threads, op_args *operations, FI
 
         if (strcmp(operations[i].op, "insert") == 0)
         {
-            // insert(&operations[i]);
             pthread_create(&threads[i], NULL, insert, &operations[i]);
         }
         else if (strcmp(operations[i].op, "delete") == 0)
         {
-            // delete(&operations[i]);
             pthread_create(&threads[i], NULL, delete, &operations[i]);
         }
-        // else if (strcmp(operations[i].op, "search") == 0)
-        // {
-
-        //     void *found_record_temp = search(&operations[i]);
-
-        //     hashRecord *found_record = (hashRecord *)found_record_temp;
-
-        //     if (found_record != NULL)
-        //         write_record(found_record->hash, found_record->name, found_record->salary);
-        //     else
-        //         write_no_record_found();
-
-        //     // pthread_create(&threads[i], NULL, search, args);
-        // }
+        else if (strcmp(operations[i].op, "search") == 0)
+        {
+            pthread_create(&threads[i], NULL, search, &operations[i]);
+        }
         // else if (strcmp(operations[i].op, "print") == 0)
         // {
         //     void *record_list_tmp = create_record_list(&operations[i]);
@@ -62,19 +50,19 @@ void join_threads(pthread_t *threads, op_args *operations, int num_threads) {
         
         int res = pthread_join(threads[i], &result);
 
-        // if (strcmp(operations[i].op, "search") == 0)
-        // {
-        //     if (result == NULL)
-        //     {
-        //         write_no_record_found();
-        //     }
-        //     else
-        //     {
-        //         hashRecord *found_record = (hashRecord *)result;
+        if (strcmp(operations[i].op, "search") == 0)
+        {
+            if (result == NULL)
+            {
+                write_no_record_found();
+            }
+            else
+            {
+                hashRecord *found_record = (hashRecord *)result;
 
-        //         write_record(found_record->hash, found_record->name, found_record->salary);
-        //     }
-        // }
+                write_record(found_record->hash, found_record->name, found_record->salary);
+            }
+        }
 //         else if (op_type[i] == 'p')
 //         {
 //             pthread_join(threads[i], &result);
@@ -131,7 +119,7 @@ void chash(void)
 
     // hashRecord *current = *(operations[0].hash_record_head);
     // while (current != NULL)
-    // 
+    // {
     //     printf("%s\n", current->name);
     //     current = current->next;
     // }
