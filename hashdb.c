@@ -134,7 +134,7 @@ void *delete(void *arg)
 	{
 		hashRecord *temp = (*head);
 		*head = (*head)->next;
-		free(*head);
+		free(temp);
 	}
 	else
 	{

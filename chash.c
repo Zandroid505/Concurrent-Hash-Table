@@ -19,8 +19,6 @@
  */
 void create_threads(pthread_t *threads, op_args *operations, int num_threads)
 {
-    op_args *args;
-
     for (int i = 0; i < num_threads; i++)
     {
         if (strcmp(operations[i].op, "insert") == 0)
@@ -59,7 +57,7 @@ void join_threads(pthread_t *threads, op_args *operations, int num_threads)
     {
         void *result = NULL;
 
-        int res = pthread_join(threads[i], &result);
+        pthread_join(threads[i], &result);
 
         if (strcmp(operations[i].op, "search") == 0)
         {
