@@ -17,6 +17,10 @@ int num_locks_released;
 // Init counter for acquired and released locks.
 extern void num_locks_init();
 
+extern void increment_num_locks_acqn();
+
+extern void increment_num_locks_released();
+
 // Getter for locks acquired.
 extern int get_num_locks_acqn();
 

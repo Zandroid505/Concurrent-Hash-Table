@@ -43,7 +43,8 @@ void *insert(void *arg)
 
 	// Acquire Write lock.
 	rwlock_acquire_writelock();
-
+	
+	increment_num_locks_acqn();
 	write_write_lock_acquired();
 
 	// Write the operation to the file.
@@ -77,6 +78,7 @@ void *insert(void *arg)
 		current->next = new_record;
 	}
 
+	increment_num_locks_released();
 	write_write_lock_released();
 
 	// Release Write lock.
@@ -95,6 +97,7 @@ void *delete(void *arg)
 	// Acquire Write lock.
 	rwlock_acquire_writelock();
 
+	increment_num_locks_acqn();
 	write_write_lock_acquired();
 
 	// Write delete operation to file.
@@ -134,6 +137,7 @@ void *delete(void *arg)
 		}
 	}
 
+	increment_num_locks_released();
 	write_write_lock_released();
 	
 	// Release Write lock.
@@ -152,6 +156,7 @@ void *search(void *arg)
 	// Acquire Read lock.
 	rwlock_acquire_readlock();
 	
+	increment_num_locks_acqn();
 	write_read_lock_acquired();
 
 	// Write the operation to the file.
@@ -170,6 +175,7 @@ void *search(void *arg)
 		current = current->next;
 	}
 
+	increment_num_locks_released();
 	write_read_lock_released();
 
 	// Release Read lock.
@@ -183,10 +189,17 @@ void *create_record_list(void *arg)
 	op_args *args = (op_args *)arg;
 
 	rwlock_acquire_readlock();
+	
+	increment_num_locks_acqn();
 	write_read_lock_acquired();
 
+	// Print final table stats if final.
+	if (strcmp(args->op, "final") == 0)
+		// Adding 1 to locks released since this is called before lock is released.
+		write_final_print(get_num_locks_acqn(), get_num_locks_released() + 1);
+
 	hashRecord *current = *(args->hash_record_head);
-	while (current != NULL)
+ 	while (current != NULL)
 	{
 		write_record(current->hash, current->name, current->salary);
 
@@ -195,6 +208,8 @@ void *create_record_list(void *arg)
 	}
 
 	write_read_lock_released();
+	
+	increment_num_locks_released();
 	rwlock_release_readlock();
 
 	pthread_exit(NULL);

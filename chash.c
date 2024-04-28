@@ -14,10 +14,6 @@ void create_threads(pthread_t *threads, int num_threads, op_args *operations, FI
 
     for (int i = 0; i < num_threads; i++)
     {
-        // Assign head to new operation from previous operation.
-        // if (i > 0 && operations[i].hash_record_head == NULL)
-        //     operations[i].hash_record_head = operations[i - 1].hash_record_head;
-
         if (strcmp(operations[i].op, "insert") == 0)
         {
             pthread_create(&threads[i], NULL, insert, &operations[i]);
@@ -30,7 +26,7 @@ void create_threads(pthread_t *threads, int num_threads, op_args *operations, FI
         {
             pthread_create(&threads[i], NULL, search, &operations[i]);
         }
-        else if (strcmp(operations[i].op, "print") == 0)
+        else if (strcmp(operations[i].op, "print") == 0 || strcmp(operations[i].op, "final") == 0)
         {
             pthread_create(&threads[i], NULL, create_record_list, &operations[i]);
         }
@@ -65,8 +61,8 @@ void chash(void)
     // Open file.
     FILE *commands_file = open_commands_file("commands.txt");
 
-    // Read number of threads.
-    int num_threads = read_num_threads(commands_file);
+    // Read number of threads + 1 for final print.
+    int num_threads = read_num_threads(commands_file) + 1;
 
     pthread_t *threads = (pthread_t *)calloc(num_threads, sizeof(pthread_t));
     op_args *operations = (op_args *)calloc(num_threads, sizeof(op_args));
@@ -76,8 +72,11 @@ void chash(void)
     hashRecord *hash_record_head = NULL;
 
     // Read operations from commands file.
-    for (int i = 0; i < num_threads && (read_op(commands_file, &operations[i])) == 0; i++)
+    for (int i = 0; i < num_threads; i++)
+    {
+        read_op(commands_file, &operations[i]);
         operations[i].hash_record_head = &hash_record_head;
+    }
 
     // Close commands file.
     close_commands_file(commands_file);
@@ -92,26 +91,10 @@ void chash(void)
     create_threads(threads, num_threads, operations, commands_file);
     join_threads(threads, operations, num_threads);
 
-    // void *record_list_tmp = create_record_list(&operations[num_threads - 1]);
-
-    // char *record_list = (char *)record_list_tmp;
-
-    // write_final_print(0, 0, record_list);
-
-    // Free allocated final print message.
-    // free(record_list);
-
     // Close output file.
     close_output_file();
 
     free(threads);
-
-    // hashRecord *current = *(operations[0].hash_record_head);
-    // while (current != NULL)
-    // {
-    //     printf("%s\n", current->name);
-    //     current = current->next;
-    // }
 
     free_hash_record(hash_record_head);
     free(operations);

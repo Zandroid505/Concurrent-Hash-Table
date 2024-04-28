@@ -75,9 +75,21 @@ int read_op(FILE *commands_file, op_args *operation)
 
         return 0;
     }
+    // End of file, set op to final print.
     else
+    {
+        // Set op type to final print.
+        strncpy(operation->op, "final", 15);
+
+        // Init name to null character, won't be used.
+        strncpy(operation->name, "\0", 50);
+
+        // Init salary, won't be used.
+        operation->salary = 0;
+
         free(line);
         return -1;
+    }
 
     // TODO: Add checks.
 }
@@ -224,7 +236,7 @@ void write_record_list(char *record_list)
     fprintf(output_file, "%s", record_list);
 }
 
-void write_final_print(int locks_acquired, int locks_released, char *record_list)
+void write_final_print(int locks_acquired, int locks_released)
 {
     fprintf(output_file, "Number of lock acquisitions: %d\n", locks_acquired);
     fprintf(output_file, "Number of lock releases: %d\n", locks_released);

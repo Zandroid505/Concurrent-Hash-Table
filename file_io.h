@@ -47,7 +47,7 @@ extern void write_read_lock_released();
 extern void write_record_list(char *record_list);
 
 // Write final output
-extern void write_final_print(int locks_acquired, int locks_released, char *record_list);
+extern void write_final_print(int locks_acquired, int locks_released);
 
 // Close output file.
 extern void close_output_file();

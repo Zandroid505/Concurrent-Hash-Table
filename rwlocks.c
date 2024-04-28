@@ -12,6 +12,16 @@ void num_locks_init()
     return;
 }
 
+void increment_num_locks_acqn()
+{
+    num_locks_acqn++;
+}
+
+void increment_num_locks_released()
+{
+    num_locks_released++;
+}
+
 // Getter for locks acquired.
 int get_num_locks_acqn()
 {
