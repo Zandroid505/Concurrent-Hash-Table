@@ -8,7 +8,16 @@
 #include "hashdb.h"
 #include "rwlocks.h"
 
-void create_threads(pthread_t *threads, int num_threads, op_args *operations, FILE *commands_file)
+/*
+ * Creates the threads for each operation on the hash record.
+ * Arguments:
+ *     - Array holding threads for each operation.
+ *     - Number of threads.
+ *     - Operations performed for each thread.
+ *
+ * Returns void.
+ */
+void create_threads(pthread_t *threads, op_args *operations, int num_threads)
 {
     op_args *args;
 
@@ -28,16 +37,28 @@ void create_threads(pthread_t *threads, int num_threads, op_args *operations, FI
         }
         else if (strcmp(operations[i].op, "print") == 0 || strcmp(operations[i].op, "final") == 0)
         {
-            pthread_create(&threads[i], NULL, create_record_list, &operations[i]);
+            pthread_create(&threads[i], NULL, print_hash_record, &operations[i]);
         }
     }
+
+    return;
 }
 
-void join_threads(pthread_t *threads, op_args *operations, int num_threads) {
+/*
+ * Join threads and get thread returns if any.
+ * Arguments:
+ *     - Array holding threads for each operation.
+ *     - Number of threads.
+ *     - Operations performed for each thread.
+ *
+ * Returns void.
+ */
+void join_threads(pthread_t *threads, op_args *operations, int num_threads)
+{
     for (int i = 0; i < num_threads; i++)
     {
         void *result = NULL;
-        
+
         int res = pthread_join(threads[i], &result);
 
         if (strcmp(operations[i].op, "search") == 0)
@@ -49,37 +70,56 @@ void join_threads(pthread_t *threads, op_args *operations, int num_threads) {
             else
             {
                 hashRecord *found_record = (hashRecord *)result;
-
                 write_record(found_record->hash, found_record->name, found_record->salary);
             }
         }
     }
+
+    return;
 }
 
+/*
+ * Perform commands specified on commands.txt using threaded hash record.
+ * Arguments: None
+ *
+ * Returns void.
+ */
 void chash(void)
 {
     // Open file.
-    FILE *commands_file = open_commands_file("commands.txt");
+    open_input_file("commands.txt");
+    FILE *input_file = get_input_file();
 
-    // Read number of threads + 1 for final print.
-    int num_threads = read_num_threads(commands_file) + 1;
+    // Read number of threads (+ 1 for final print).
+    int num_threads = read_num_threads(input_file) + 1;
 
+    // Allocate threads.
     pthread_t *threads = (pthread_t *)calloc(num_threads, sizeof(pthread_t));
-    op_args *operations = (op_args *)calloc(num_threads, sizeof(op_args));
+    if (threads == NULL)
+    {
+        fprintf(stderr, "Error: Could not allocate memory for threads.\n");
+        exit(1);
+    }
 
-   // TODO: Add checks for DMA above.
+    // Allocated operations.
+    op_args *operations = (op_args *)calloc(num_threads, sizeof(op_args));
+    if (operations == NULL)
+    {
+        fprintf(stderr, "Error: Could not allocate memory for hash record operations.\n");
+        exit(1);
+    }
 
     hashRecord *hash_record_head = NULL;
 
     // Read operations from commands file.
     for (int i = 0; i < num_threads; i++)
     {
-        read_op(commands_file, &operations[i]);
+        read_op(input_file, &operations[i]);
         operations[i].hash_record_head = &hash_record_head;
     }
 
     // Close commands file.
-    close_commands_file(commands_file);
+    close_input_file();
 
     // Initialize thread locks.
     rwlock_init();
@@ -88,17 +128,18 @@ void chash(void)
     // Open output file.
     open_output_file("output.txt");
 
-    create_threads(threads, num_threads, operations, commands_file);
+    create_threads(threads, operations, num_threads);
     join_threads(threads, operations, num_threads);
 
     // Close output file.
     close_output_file();
 
     free(threads);
-
-    free_hash_record(hash_record_head);
     free(operations);
 
+    free_hash_record(hash_record_head);
+
+    return;
 }
 
 int main()

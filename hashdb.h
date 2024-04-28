@@ -21,24 +21,13 @@ typedef struct hash_record_op_arg
 	uint32_t salary;
 } op_args;
 
-// Jenkins Hash function declaration.
 extern uint32_t jenkins_hash(char *key);
 
-// Insertion function declaration.
 extern void *insert(void *args);
-
-// Deletion function declaration.
 extern void *delete(void *args);
-
-// Search function declaration.
 extern void *search(void *args);
 
-// Returns string formatted Hash table list.
-// Used when print function is called.
-// print List Contents function declaration.
-extern void *create_record_list(void *args);
-
-// Free hash record.
+extern void *print_hash_record(void *args);
 extern void free_hash_record(hashRecord *hash_record_head);
 
 #endif

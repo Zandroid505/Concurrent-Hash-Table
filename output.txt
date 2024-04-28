@@ -51,6 +51,6 @@ Final Table:
 909366975,Roberta Williams,45900
 1874280167,Shigeru Miyamoto,51000
 2500551319,Richard Garriot,40000
+1874280167,Shigeru Miyamoto,51000
 2569965317,Hideo Kojima,45000
 READ LOCK RELEASED
-1874280167,Shigeru Miyamoto,51000

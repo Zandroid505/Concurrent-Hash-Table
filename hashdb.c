@@ -3,11 +3,18 @@
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
+
 #include "hashdb.h"
 #include "file_io.h"
 #include "rwlocks.h"
 
-// Jenkins Hash function declaration.
+/*
+ * Calculates Jenkin's one_at_a_time hash based on an inputted name.
+ * Arguments:
+ *     - Name of a person.
+ *
+ * Returns calculated hash value.
+ */
 uint32_t jenkins_hash(char name[50])
 {
 	size_t length = strnlen(name, 50);
@@ -27,7 +34,17 @@ uint32_t jenkins_hash(char name[50])
 	return hash;
 }
 
-// Insertion function declaration.
+/*
+ * Inserts a new record into the hash record.
+ * Arguments:
+ *     - arg
+ *         - Pointer to the head of the hash record.
+ *         - Operation type of record ("insert").
+ *         - Name of the new record.
+ *         - Salary of the new record.
+ *
+ * Returns NULL.
+ */
 void *insert(void *arg)
 {
 	op_args *args = (op_args *)arg;
@@ -41,13 +58,11 @@ void *insert(void *arg)
 		return NULL;
 	}
 
-	// Acquire Write lock.
 	rwlock_acquire_writelock();
-	
+
 	increment_num_locks_acqn();
 	write_write_lock_acquired();
 
-	// Write the operation to the file.
 	write_insert_op(args->op, hash, args->name, args->salary);
 
 	// Initialize new record.
@@ -81,26 +96,33 @@ void *insert(void *arg)
 	increment_num_locks_released();
 	write_write_lock_released();
 
-	// Release Write lock.
 	rwlock_release_writelock();
 
 	pthread_exit(NULL);
 }
 
-// Deletion function declaration.
+/*
+ * Deletes a record from the hash record.
+ * Arguments:
+ *     - arg
+ *         - Pointer to the head of the hash record.
+ *         - Operation type of record ("delete").
+ *         - Name of the record to delete.
+ *         - Salary (NOT USED).
+ *
+ * Returns NULL.
+ */
 void *delete(void *arg)
 {
 	op_args *args = (op_args *)arg;
 	uint32_t hash = jenkins_hash(args->name);
 	char name[50];
 
-	// Acquire Write lock.
 	rwlock_acquire_writelock();
 
 	increment_num_locks_acqn();
 	write_write_lock_acquired();
 
-	// Write delete operation to file.
 	write_delete_op(args->op, args->name);
 
 	// Hold the head and init a prev hashrecord holder.
@@ -139,27 +161,34 @@ void *delete(void *arg)
 
 	increment_num_locks_released();
 	write_write_lock_released();
-	
-	// Release Write lock.
+
 	rwlock_release_writelock();
 
 	pthread_exit(NULL);
 }
 
-// Search function declaration.
+/*
+ * Searches for a record in the hash record.
+ * Arguments:
+ *     - arg
+ *         - Pointer to the head of the hash record.
+ *         - Operation type of record ("search").
+ *         - Name of the record to search for.
+ *         - Salary (NOT USED).
+ *
+ * Returns found record or NULL if not found.
+ */
 void *search(void *arg)
 {
 	op_args *args = (op_args *)arg;
 	uint32_t hash = jenkins_hash(args->name);
 	hashRecord *found_record = NULL;
 
-	// Acquire Read lock.
 	rwlock_acquire_readlock();
-	
+
 	increment_num_locks_acqn();
 	write_read_lock_acquired();
 
-	// Write the operation to the file.
 	write_search_op(args->op, args->name);
 
 	// Search list for record
@@ -178,28 +207,38 @@ void *search(void *arg)
 	increment_num_locks_released();
 	write_read_lock_released();
 
-	// Release Read lock.
 	rwlock_release_readlock();
 
 	pthread_exit(found_record);
 }
 
-void *create_record_list(void *arg)
+/*
+ * Print the entire hash record.
+ * Arguments:
+ *     - arg
+ *         - Pointer to the head of the hash record.
+ *         - Operation type of record ("print" or "final").
+ *         - Name of the record (NOT USED).
+ *         - Salary (NOT USED).
+ *
+ * Returns NULL.
+ */
+void *print_hash_record(void *arg)
 {
 	op_args *args = (op_args *)arg;
 
 	rwlock_acquire_readlock();
-	
+
 	increment_num_locks_acqn();
 	write_read_lock_acquired();
 
 	// Print final table stats if final.
 	if (strcmp(args->op, "final") == 0)
 		// Adding 1 to locks released since this is called before lock is released.
-		write_final_print(get_num_locks_acqn(), get_num_locks_released() + 1);
+		write_final_print_header(get_num_locks_acqn(), get_num_locks_released() + 1);
 
 	hashRecord *current = *(args->hash_record_head);
- 	while (current != NULL)
+	while (current != NULL)
 	{
 		write_record(current->hash, current->name, current->salary);
 
@@ -208,13 +247,20 @@ void *create_record_list(void *arg)
 	}
 
 	write_read_lock_released();
-	
 	increment_num_locks_released();
+
 	rwlock_release_readlock();
 
 	pthread_exit(NULL);
 }
 
+/*
+ * Free each record in the hash record.
+ * Arguments:
+ *     - Head pointer of the hash record.
+ *
+ * Returns void.
+ */
 void free_hash_record(hashRecord *hash_record_head)
 {
 	hashRecord *current = hash_record_head;
@@ -227,4 +273,5 @@ void free_hash_record(hashRecord *hash_record_head)
 		current = next;
 	}
 
+	return;
 }

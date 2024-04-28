@@ -1,32 +1,38 @@
 #include <stdlib.h>
 #include <string.h>
+
 #include "file_io.h"
 #include "hashdb.h"
 
-// Output file.
-FILE *output_file;
-
 /*
- * Open commands file.
+ * Open input file.
  * Arguments:
  *     - File name.
- * Returns opened file pointer.
+ * Returns void.
  */
-FILE *open_commands_file(char *file_name)
+void open_input_file(char *file_name)
 {
-    FILE *commands_file = fopen(file_name, "r+");
+    input_file = fopen(file_name, "r+");
 
-    if (commands_file == NULL)
+    if (input_file == NULL)
     {
         fprintf(stderr, "Error opening file %s.\n", file_name);
         exit(1);
     }
 
-    return commands_file;
+    return;
 }
 
 /*
- * Read number of threads from the commands file.
+ * Get input file.
+ * Arguments: None
+ *
+ * Returns input file pointer.
+ */
+FILE *get_input_file() { return input_file; }
+
+/*
+ * Read number of threads from the input file.
  * Arguments:
  *     - File pointer containing commands.
  * Returns number of threads.
@@ -43,7 +49,8 @@ int read_num_threads(FILE *commands_file)
  * Read operation from commands file.
  * Arguments:
  *     - File pointer containing commands.
- * Returns struct containing operation details.
+ *     - Operation struct to hold operation info.
+ * Returns 0 if there are still operations and -1 if it reaches the end of the file.
  */
 int read_op(FILE *commands_file, op_args *operation)
 {
@@ -90,30 +97,31 @@ int read_op(FILE *commands_file, op_args *operation)
         free(line);
         return -1;
     }
-
-    // TODO: Add checks.
 }
 
 /*
- * Closes commands file.
- * Arguments:
- *     - File pointer.
+ * Closes input file.
+ * Arguments: None
+ *
  * Returns void.
  */
-void close_commands_file(FILE *commands_file)
+void close_input_file()
 {
-    if (fclose(commands_file) != 0)
+    if (fclose(input_file) != 0)
     {
         fprintf(stderr, "Error closing commands file.\n");
         exit(1);
     }
+
+    return;
 }
 
 /*
  * Open output file.
  * Arguments:
  *     - File name.
- * Returns opened file pointer.
+ *
+ * Returns void.
  */
 void open_output_file(char *file_name)
 {
@@ -124,128 +132,168 @@ void open_output_file(char *file_name)
         fprintf(stderr, "Error opening file %s.\n", file_name);
         exit(1);
     }
+
+    return;
 }
 
 /*
  * Get output file.
- * Arguments:
+ * Arguments: None
  *
- * Returns file pointer.
+ * Returns output file pointer.
  */
-FILE *get_output_file()
-{
-    return output_file;
-}
+FILE *get_output_file() { return output_file; }
 
 /*
  * Write the insert operation to the output file.
  * Arguments:
  *     - Operation type.
- *     - Hash value associated with hash record.
+ *     - Hash of the record.
  *     - Name of person.
  *     - Salary of person.
+ *
  * Returns void.
  */
 void write_insert_op(char op[15], uint32_t hash, char name[50], uint32_t salary)
 {
     fprintf(output_file, "INSERT,%u,%s,%u\n", hash, name, salary);
+
+    return;
 }
 
 /*
- * Write the insert operation to the output file.
+ * Write the delete operation to the output file.
  * Arguments:
  *     - Operation type.
  *     - Name of person.
+ *
  * Returns void.
  */
 void write_delete_op(char op[15], char name[50])
 {
     fprintf(output_file, "DELETE,%s\n", name);
+
+    return;
 }
 
 /*
- * Write the insert operation to the output file.
+ * Write the search operation to the output file.
  * Arguments:
  *     - Operation type.
  *     - Name of person.
+ *
  * Returns void.
  */
 void write_search_op(char op[15], char name[50])
 {
     fprintf(output_file, "SEARCH,%s\n", name);
+
+    return;
 }
 
+/*
+ * Write single record to the output file.
+ * Arguments:
+ *     - Hash of the record.
+ *     - Name of person associated with the record.
+ *     - Salary of the person assocaited with the record.
+ *
+ * Returns void.
+ */
 void write_record(uint32_t hash, char name[50], uint32_t salary)
 {
     fprintf(output_file, "%u,%s,%u\n", hash, name, salary);
+
+    return;
 }
 
+/*
+ * Write "No Record Found" to the output file.
+ * Arguments: None.
+ *
+ * Returns void.
+ */
 void write_no_record_found()
 {
     fprintf(output_file, "No Record Found\n");
+
+    return;
 }
 
 /*
  * Write "WRITE LOCK ACQUIRED" to output file.
- * Arguments: N/A
+ * Arguments: None.
+ *
  * Returns void.
  */
 void write_write_lock_acquired()
 {
     fprintf(output_file, "WRITE LOCK ACQUIRED\n");
+
+    return;
 }
 
 /*
  * Write "WRITE LOCK RELEASED" to output file.
- * Arguments: N/A
+ * Arguments: None.
+ *
  * Returns void.
  */
 void write_write_lock_released()
 {
     fprintf(output_file, "WRITE LOCK RELEASED\n");
+
+    return;
 }
 
 /*
  * Write "READ LOCK ACQUIRED" to output file.
- * Arguments: N/A
+ * Arguments: None.
+ *
  * Returns void.
  */
 void write_read_lock_acquired()
 {
     fprintf(output_file, "READ LOCK ACQUIRED\n");
+
+    return;
 }
 
 /*
  * Write "READ LOCK RELEASED" to output file.
- * Arguments: N/A
+ * Arguments: None.
+ *
  * Returns void.
  */
 void write_read_lock_released()
 {
     fprintf(output_file, "READ LOCK RELEASED\n");
+
+    return;
 }
 
 /*
- * Write entire record to file.
+ * Write a final print of the hash record to the output file with the
+ * number of locks acquired and released.
  * Arguments:
- *     - Formatted string of entire hash record.
+ *     - Number of locks acquired.
+ *     - number of locks released.
+ *
  * Returns void.
  */
-void write_record_list(char *record_list)
-{
-    fprintf(output_file, "%s", record_list);
-}
-
-void write_final_print(int locks_acquired, int locks_released)
+void write_final_print_header(int locks_acquired, int locks_released)
 {
     fprintf(output_file, "Number of lock acquisitions: %d\n", locks_acquired);
     fprintf(output_file, "Number of lock releases: %d\n", locks_released);
     fprintf(output_file, "Final Table:\n");
+
+    return;
 }
 
 /*
  * Closes output file.
- * Arguments: N/A
+ * Arguments: None.
+ *
  * Returns void.
  */
 void close_output_file()
@@ -255,4 +303,6 @@ void close_output_file()
         fprintf(stderr, "Error closing output file.\n");
         exit(1);
     }
+
+    return;
 }
