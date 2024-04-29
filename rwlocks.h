@@ -12,10 +12,10 @@ typedef struct _rwlock_t
 } rwlock_t;
 
 // Mutex lock.
-rwlock_t mutex;
+extern rwlock_t mutex;
 
-int num_locks_acqn;
-int num_locks_released;
+extern int num_locks_acqn;
+extern int num_locks_released;
 
 extern void num_locks_init();
 extern void increment_num_locks_acqn();

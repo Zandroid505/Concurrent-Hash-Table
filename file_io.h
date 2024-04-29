@@ -4,8 +4,8 @@
 #include <stdio.h>
 #include "hashdb.h"
 
-FILE *input_file;
-FILE *output_file;
+extern FILE *input_file;
+extern FILE *output_file;
 
 extern void open_input_file(char *file_name);
 extern FILE *get_input_file();

@@ -1,0 +1,15 @@
+threads,14,0
+insert,Richard Garriot,40000
+insert,Sid Meier,50000
+insert,Shigeru Miyamoto,51000
+insert,Hideo Kojima,45000
+insert,Gabe Newell,49000
+insert,Roberta Williams,45900
+insert,Carol Shaw,41000
+search,Richard Garriot,0
+search,Sid Meier,0
+search,Shigeru Miyamoto,0
+search,Hideo Kojima,0
+search,Gabe Newell,0
+search,Roberta Williams,0
+search,Carol Shaw,0

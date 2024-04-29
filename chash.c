@@ -53,6 +53,10 @@ void create_threads(pthread_t *threads, op_args *operations, int num_threads)
  */
 void join_threads(pthread_t *threads, op_args *operations, int num_threads)
 {
+    // Hold found records for printing to output file.
+    hashRecord *found_records = (hashRecord *)calloc(num_threads, sizeof(hashRecord));
+    int found_record_index = 0;
+
     for (int i = 0; i < num_threads; i++)
     {
         void *result = NULL;
@@ -68,10 +72,16 @@ void join_threads(pthread_t *threads, op_args *operations, int num_threads)
             else
             {
                 hashRecord *found_record = (hashRecord *)result;
+
+                found_records[found_record_index] = *(found_record);
                 write_record(found_record->hash, found_record->name, found_record->salary);
             }
         }
     }
+
+    // Iterate through found records and write them to file.
+    
+    free(found_records);
 
     return;
 }

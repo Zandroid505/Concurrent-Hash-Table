@@ -2,6 +2,11 @@
 #include "common.h"
 #include "rwlocks.h"
 
+rwlock_t mutex;
+
+int num_locks_acqn;
+int num_locks_released;
+
 /*
  * Initialize the number of locks acquired and released to 0.
  * Arguments: None.

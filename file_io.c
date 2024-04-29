@@ -4,6 +4,9 @@
 #include "file_io.h"
 #include "hashdb.h"
 
+FILE *input_file;
+FILE *output_file;
+
 /*
  * Open input file.
  * Arguments:
