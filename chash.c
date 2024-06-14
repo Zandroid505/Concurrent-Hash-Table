@@ -43,7 +43,7 @@ void create_threads(pthread_t *threads, op_args *operations, int num_threads)
 }
 
 /*
- * Join threads and get thread returns if any.
+ * Join threads and get thread returns if there are any.
  * Arguments:
  *     - Array holding threads for each operation.
  *     - Number of threads.
